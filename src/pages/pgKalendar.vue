@@ -60,9 +60,10 @@
             <q-item-section side>
               <!-- {{dan.m}} -->
               <!-- <div :class="'bg-' + getColor(dan.boja)[0]" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" /> -->
-              <q-avatar size="xs" color="brown">
+              <!-- <q-avatar size="xs" color="brown">
                 <img :src="MoonPhase(today.y,dan.d,dan.m)">
-              </q-avatar>
+              </q-avatar> -->
+              <q-icon class="wi wi-moon-new" />
             </q-item-section>
           </q-item>
         </q-list>

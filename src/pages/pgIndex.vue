@@ -3,30 +3,36 @@
     <div class="column fit bg-brown-1">
 
       <div
-        class="fit overflow-hidden flex items-center justify-center"
+        class="fit overflow-hidden flex items-center justify-center column q-pa-md"
         ref="midContainer"
         :style="midStyle"
       >
-        <div :style="gridStyle" class="row">
-          <div
-            v-for="(section, index) in sections"
-            :key="'id_' + index"
-            :style="cellStyle"
-            class="col-8"
+        <div
+          v-for="(section, index) in sections"
+          :key="'id_' + index"
+          class="col full-width"
+          :class="{
+            'q-pb-md': index < sections.length - 1,
+            'q-pb-none': index === sections.length - 1
+          }"
+        >
+          <q-btn
+            :color="section.color"
+            :to="section.to"
+            :type="section.href ? 'a' : 'button'"
+            :href="section.href ? section.href : null"
+            :target="section.href ? '_blank' : null"
+            class="fit"
+            align="left"
+            ripple no-caps
           >
-            <q-btn
-              class="fit"
-              :color="section.color"
-              :to="section.to"
-              :type="section.href ? 'a' : 'button'"
-              :href="section.href ? section.href : null"
-              :target="section.href ? '_blank' : null"
-              stack glossy ripple no-caps
-            >
-              <q-icon :size="iconSize" :name="section.icon" class="col-grow"/>
-              <div class="col-shrink " style="line-height: 1rem">{{ section.label }}</div>
-            </q-btn>
-          </div>
+            <q-icon :size="iconSize" :name="section.icon" class="q-ml-sm" />
+            <q-separator dark vertical inset class="q-mx-lg"/>
+            <div class="text-h6">{{ section.label }}</div>
+            <q-space/>
+            <q-separator dark vertical inset class="q-mx-lg"/>
+            <q-icon size="xs" name="mdi-arrow-right" class="q-mr-sm" />
+          </q-btn>
         </div>
         <q-resize-observer @resize="onResize" />
       </div>

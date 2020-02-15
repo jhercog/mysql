@@ -195,7 +195,6 @@ export default {
       let d = newDate.getDate() // `day` is 4
       let m = newDate.getMonth() + 1// `day` is 4
       let y = newDate.getFullYear() // `day` is 4
-      console.log(y.typeOf);
       return {
         datum: datum,
         d: d,
@@ -325,7 +324,7 @@ export default {
           case 3: moonImg = 'statics/moon3-40.png'; break
           case 4: moonImg = 'statics/moon4-40.png'; break
           case 5: moonImg = 'statics/moon5-40.png'; break
-          case 6: moonImg = 'statics/moon6-40.png';console.log('moonImg'); break
+          case 6: moonImg = 'statics/moon6-40.png'; break
           case 7: moonImg = 'statics/moon7-40.png'; break
           // default: moonImg = '';
         }
