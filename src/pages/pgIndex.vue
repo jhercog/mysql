@@ -150,7 +150,7 @@ export default {
       const topHeight = this.$refs.topContainer.clientHeight / 16
       const bottomHeight = this.$refs.bottomContainer.clientHeight / 16
       const midHeight = (this.$refs.midContainer.clientHeight / 16) - topHeight - bottomHeight
-      const cellSize = ((midHeight - 1.5) / 3) * 0.9
+      const cellSize = ((midHeight - 1.5) / 3) * 0.95
       this.midStyle = {
         paddingTop: topHeight + 'rem',
         paddingBottom: bottomHeight + 'rem'
