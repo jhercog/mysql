@@ -31,30 +31,35 @@
         <q-resize-observer @resize="onResize" />
       </div>
 
-      <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
-        <div class="column">
-          <div class="flex text-h7 justify-center text-weight-bold text-brown-7">
-            {{ getDate.datum }} <!-- <img :src="MoonPhase(2020,14,2)"> -->
+        <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
+          <q-card class="q-pa-xs" style="width: 100%">
+          <div class="column justify-center ">
+            <div class="flex text-h7 justify-center text-weight-bold text-brown-7">
+              {{ getDate.datum }} <!-- <img :src="MoonPhase(2020,14,2)"> -->
+            </div>
+            <div class="flex text-caption justify-center">
+              {{ getTodaysSaint.blagdan }}
+            </div>
+            <div class="flex justify-center">
+              {{ getTodaysSaint.prazblag }}
+            </div>
+            <div class="flex justify-center">
+              {{ getTodaysSaint.pomicni_blag }}
+            </div>
+            <div class="flex justify-center text-center text-weight-bold">
+              {{ getTodaysSaint.sveci }}
+            </div>
           </div>
-          <div class="flex text-caption justify-center">
-            {{ getTodaysSaint.blagdan }}
-          </div>
-          <div class="flex justify-center">
-            {{ getTodaysSaint.prazblag }}
-          </div>
-          <div class="flex justify-center">
-            {{ getTodaysSaint.pomicni_blag }}
-          </div>
-          <div class="flex justify-center text-weight-bold">
-            {{ getTodaysSaint.sveci }}
-          </div>
+        </q-card>
         </div>
-      </div>
 
-      <div class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer">
-        <!-- <div class="column text-center text-body2 text-brown">
+      <!-- <q-card class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer"> -->
+      <div class="absolute-bottom q-pa-md flex items-center justify-center" ref="bottomContainer">
+        <q-card class="q-pa-xs" style="width: 100%">
+        <div class="column text-center text-body1 text-brown">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </div> -->
+        </div>
+        </q-card>
       </div>
     </div>
     <q-dialog v-model="persistent" persistent transition-show="scale" transition-hide="scale">
@@ -146,6 +151,7 @@ export default {
     ...mapActions('main',['getKalendar']),
     ...mapMutations('main',['cleartateVars', 'setSuglasnostLS']),
     onResize () {
+      console.log(this.$refs.topContainer);
       // const length = Math.min(this.$refs.midContainer.clientWidth, this.$refs.midContainer.clientHeight) / 16
       const topHeight = this.$refs.topContainer.clientHeight / 16
       const bottomHeight = this.$refs.bottomContainer.clientHeight / 16
