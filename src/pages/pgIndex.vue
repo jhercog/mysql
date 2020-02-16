@@ -12,7 +12,7 @@
           :key="'id_' + index"
           class="col full-width"
           :class="{
-            'q-pb-md': index < sections.length - 1,
+            'q-pb-xs': index < sections.length - 1,
             'q-pb-none': index === sections.length - 1
           }"
         >
@@ -22,57 +22,44 @@
             :type="section.href ? 'a' : 'button'"
             :href="section.href ? section.href : null"
             :target="section.href ? '_blank' : null"
-            class="fit"
+            class="fit main-menu-btn"
             align="left"
             ripple no-caps
           >
-            <q-icon :size="iconSize" :name="section.icon" class="q-ml-sm" :style="{ width: iconWidth }"/>
-            <q-separator dark vertical inset class="q-mx-lg"/>
-            <div class="text-h6">{{ section.label }}</div>
+            <q-icon :size="iconSize" :name="section.icon" :style="{ width: iconWidth }"/>
+            <div
+              class="q-px-sm"
+              :style="{
+                fontSize: $q.screen.lt.sm ? '0.875rem' : '1.25rem',
+                fontWeight: '700'
+              }"
+            >
+              {{ section.label }}
+            </div>
             <q-space/>
-            <q-separator dark vertical inset class="q-mx-lg"/>
             <q-icon size="xs" name="mdi-arrow-right" class="q-mr-sm" />
           </q-btn>
         </div>
         <q-resize-observer @resize="onResize" />
       </div>
 
-      <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
-        <q-card class="q-py-sm q-pl-lg q-pr-md" style="width: 100%">
-          <div class="row day" :class="getDayClasses">
+      <div class="absolute-top q-px-md q-pt-md q-pb-xs flex items-center justify-center text-brown" ref="topContainer">
+        <q-card class="q-py-sm q-px-sm" style="width: 100%">
+          <div class="row day no-wrap" :class="getDayClasses">
             <q-card flat bordered class="day-icon" ref="dayIcon">
-              <q-card-section class="day-in-week">
-                {{ dayOfWeek.toUpperCase() }}
-              </q-card-section>
-              <q-card-section class="date">
-                {{ getToday.d }}.{{ getToday.m }}
-              </q-card-section>
-              <q-card-section class="year">
-                {{ getToday.y }}
-              </q-card-section>
+              <q-card-section class="day-in-week">{{ dayOfWeek.toUpperCase() }}</q-card-section>
+              <q-card-section class="date">{{ getToday.d }}.{{ getToday.m }}</q-card-section>
+              <q-card-section class="year">{{ getToday.y }}</q-card-section>
             </q-card>
-            <q-separator vertical inset class="q-mx-lg"/>
-            <!-- <div class="flex text-h7 justify-center text-weight-bold">
-              {{ getDate }}
-            </div> -->
-            <div class="column text-brown justify-center">
-              <div class="flex">
-                {{ getTodaysData.prazblag }}
-              </div>
-              <div class="flex">
-                {{ getTodaysData.pomicni_blag }}
-              </div>
-              <div class="flex">
-                {{ getTodaysData.sveci }}
-              </div>
-              <div class="flex text-caption">
-                {{ getTodaysData.blagdan }}
-              </div>
+            <div class="column text-brown justify-center q-px-sm">
+              <div class="flex">{{ getTodaysData.prazblag }}</div>
+              <div class="flex">{{ getTodaysData.pomicni_blag }}</div>
+              <div class="flex">{{ getTodaysData.sveci }}</div>
+              <div class="flex text-caption">{{ getTodaysData.blagdan }}</div>
             </div>
             <q-space/>
-            <q-separator vertical inset class="q-mx-lg"/>
-            <div class="flex items-center">
-              <q-icon size="xs" :class="getMoonClass({ day: parseInt(getToday.d), month: parseInt(getToday.m), year: parseInt(getToday.y) })" class="q-mr-sm" />
+            <div class="flex">
+              <q-icon size="xs" :class="getMoonClass({ day: parseInt(getToday.d), month: parseInt(getToday.m), year: parseInt(getToday.y) })" />
             </div>
           </div>
         </q-card>
@@ -80,12 +67,11 @@
       </div>
 
       <!-- <q-card class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer"> -->
-      <div class="absolute-bottom q-pa-md flex items-center justify-center" ref="bottomContainer">
-        <q-card class="q-py-sm q-px-md" style="width: 100%">
+      <div class="absolute-bottom q-px-md q-pt-xs q-pb-md flex items-center justify-center" ref="bottomContainer">
+        <q-card class="q-pa-sm" style="width: 100%">
           <div class="row items-center">
-            <q-icon :size="iconSize" name="mdi-format-quote-open" color="brown-2" class="q-ml-sm" :style="{ width: iconWidth }"/>
-            <q-separator vertical inset class="q-mx-lg"/>
-            <div class="col text-body1 text-brown flex items-center">
+            <q-icon :size="iconSize" name="mdi-comment-quote-outline" color="brown-2" :style="{ width: iconWidth }"/>
+            <div class="col text-brown flex items-center q-px-sm">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </div>
           </div>
@@ -156,6 +142,7 @@ export default {
       .catch(error => {
         console.error(error)
       })
+    this.$q.screen.setSizes({ sm: 300, md: 500, lg: 1000, xl: 2000 })
   },
   mounted () {
     this.onResize()

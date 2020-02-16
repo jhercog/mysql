@@ -9,23 +9,31 @@
   .caption
     color: $brown
   .day-icon
-    .day-in-week
+    display: flex
+    flex-direction: column
+    .day-in-week, .date, .year
+      display: flex
       text-align: center
+      justify-content: center
+      align-items: center
+    .day-in-week
       font-size: 0.75rem
       line-height: 1rem
       font-weight: 800
       letter-spacing: 2px
       padding: 0
       color: white
+      flex: 0 1 auto
     .date
+      flex: 1 0 auto
       padding: 0.5rem
       line-height: 1.5rem
       font-size: 1.25rem
       width: 4.5rem
-      text-align: center
       font-weight: 600
+      vertical-align: middle
     .year
-      text-align: center
+      flex: 0 1 auto
       font-size: 0.75rem
       line-height: 1rem
       font-weight: 800

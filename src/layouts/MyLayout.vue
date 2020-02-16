@@ -17,28 +17,10 @@
           />
           <q-separator dark vertical inset class="q-mx-sm"/>
           <q-btn v-if="$route.name !== 'Home'" flat dense icon="home" to="/" outline rounded color="white" />
-
         </div>
         <div class="absolute-right flex items-center q-pr-sm">
           <q-btn v-if="$route.name == 'Kalendar'" @click="showDialog = true" size="lg" flat dense icon="search" outline rounded color="white" />
           <q-btn v-if="$route.name == 'Molitvenik'" @click="showDialog = true"  size="lg" flat dense icon="stars" outline rounded color="white" />
-          <!-- <q-avatar
-          :text-color="isOnline ? 'green' : 'red'"
-          size="lg"
-          rounded
-          :icon="isOnline ? 'wifi' : 'wifi_off'"
-          >
-            <q-tooltip anchor="center left" self="center right" :offset="[10, 10]">
-              {{ (isOnline ? 'Online' : 'Offline') }}
-            </q-tooltip>
-          </q-avatar> -->
-          <!-- <q-avatar size="lg" color="brown-3">
-              <icon name="stars">  </icon>
-          </q-avatar> -->
-          <!-- <q-avatar v-if="$route.name !== 'Home'" size="lg" color="brown-3"> -->
-            <q-avatar v-if="$route.name == 'Home'" size="lg" color="brown">
-              <img :src="MoonPhase(getDate.y,getDate.d,getDate.m)">
-          </q-avatar>
           <q-separator dark vertical inset class="q-mx-sm"/>
           <q-avatar size="lg" color="brown-3">
               <img src="statics/katkalikona.png">
