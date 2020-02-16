@@ -39,7 +39,7 @@
             <q-item-section side>
               <q-card flat bordered class="day-icon">
                 <q-card-section class="day-in-week">
-                  {{ dayOfWeek2(dan).toUpperCase() }}
+                  {{ dayOfWeek(dan).toUpperCase() }}
                 </q-card-section>
                 <q-card-section class="date">
                   {{ dan.d }}.{{ dan.m }}.
@@ -58,11 +58,7 @@
               <div v-if="getColor(dan.boja)[0]=='pink-3'" :class="'bg-purple'" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" />
             </q-item-section>
             <q-item-section side>
-              <!-- {{dan.m}} -->
-              <!-- <div :class="'bg-' + getColor(dan.boja)[0]" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" /> -->
-              <q-avatar size="xs" color="brown">
-                <img :src="MoonPhase(today.y,dan.d,dan.m)">
-              </q-avatar>
+              <q-icon color="brown" :class="getMoonClass({ day: parseInt(dan.d), month: parseInt(dan.m), year: parseInt(getToday.y) })" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -73,8 +69,8 @@
   <div ref="pageHeader" class="absolute-top">
     <div>
       <div v-if="checkNextYear" class="row justify-center q-py-md">
-        <q-btn flat v-if="checkNextYear" rounded color="brown" size="1rem" :label="today.y" @click="chosenYear = today.y"/>
-        <q-btn v-if="checkNextYear" flat rounded color="brown" size="1rem" :label="today.y + 1" @click="chosenYear = today.y + 1" />
+        <q-btn flat v-if="checkNextYear" rounded color="brown" size="1rem" :label="getToday.y" @click="chosenYear = getToday.y"/>
+        <q-btn v-if="checkNextYear" flat rounded color="brown" size="1rem" :label="getToday.y + 1" @click="chosenYear = getToday.y + 1" />
       </div>
       <q-tabs v-model="currentMonth" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify">
         <q-tab
@@ -97,20 +93,20 @@
     <q-card>
       <q-toolbar
         :class="{
-          'bg-red-10': dayOfWeek2(chosenDay) === 'Ned' && chosenDay.d !== today.d.toString(),
-          'bg-brown-5': dayOfWeek2(chosenDay) !== 'Ned' && chosenDay.d !== today.d.toString(),
-          'bg-blue': chosenDay.d === today.d.toString()
+          'bg-red-10': dayOfWeek(chosenDay) === 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-brown-5': dayOfWeek(chosenDay) !== 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-blue': chosenDay.d === getToday.d.toString()
         }"
       >
         <q-avatar color="white">
           <img src="statics/katkalikona.png">
         </q-avatar>
-        <q-toolbar-title class="text-white">
-          <span class="text-weight-bold">{{ dayOfWeek2(chosenDay) }}, </span>{{ chosenDay.d }}.{{ currentMonth }}.{{ today.y }}.
-        </q-toolbar-title>
-        <q-avatar size="xs" color="brown">
-          <img :src="MoonPhase(today.y,chosenDay.d,chosenDay.m)">
-        </q-avatar>
+        <div class="text-white text-h6 q-pl-md">
+          {{ dayOfWeek(chosenDay) }}, {{ chosenDay.d }}.{{ currentMonth }}.{{ getToday.y }}.
+        </div>
+        <q-separator dark vertical inset class="q-mx-md"/>
+        <q-icon color="white" size="1.25rem" :class="getMoonClass({ day: parseInt(chosenDay.d), month: parseInt(currentMonth), year: parseInt(getToday.y) }).replace('alt-','')" />
+        <q-space/>
         <q-btn flat round dense color="white" icon="close" v-close-popup />
       </q-toolbar>
 
@@ -157,6 +153,7 @@
     </q-card>
   </q-dialog>
 
+
   <q-dialog v-model="showDialog" bottom full-height>
     <div class="q-pa-md bg-white" style="max-width: 350px">
       <q-toolbar>
@@ -194,23 +191,15 @@ import axios from 'axios'
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex'
 import { scroll } from 'quasar'
 const { getScrollTarget, setScrollPosition } = scroll
-const now = new Date()
-const today = {
-  datum: date.formatDate(now, 'D.M.YYYY.'),
-  d: now.getDate(),
-  m: now.getMonth() + 1,
-  y: now.getFullYear()
-}
 export default {
   data() {
     return {
-      croDates: this.$q.lang.date, // Ovo je date objekt localea koji smo postavili u App.vue
-      today,
-      currentMonth: today.m,
+      croDates: this.$q.lang.date,
+      currentMonth: null,
       danUmjesecu: 1,
       dayDetails: false,
       chosenDay: null,
-      chosenYear: today.y,
+      chosenYear: null,
       pageHeaderHeight: 0,
       searchText: '',
       items: null,
@@ -224,8 +213,9 @@ export default {
     }
   },
   created() {
-    this.currentMonth = this.today.m
-    this.chosenDay = this.mjeseci[this.currentMonth][this.today.d - 1]
+    this.currentMonth = this.getToday.m
+    this.chosenYear = this.getToday.y
+    this.chosenDay = this.mjeseci[this.currentMonth][this.getToday.d - 1]
 
     this.getKalendar()
        .then(res => {
@@ -237,10 +227,10 @@ export default {
     },
   mounted () {
     this.pageHeaderHeight = this.$refs.pageHeader.clientHeight
-    this.scrollToDay(this.$refs['day_' + (this.today.d - 1)][0].$el)
+    this.scrollToDay(this.$refs['day_' + (this.getToday.d - 1)][0].$el)
   },
   computed: {
-    ...mapGetters('main', ['getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
+    ...mapGetters('main', ['getToday', 'getMoonClass', 'getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
     showDialog: {
       get () {
         return this.$store.getters['main/getShowDialog']
@@ -257,10 +247,10 @@ export default {
       return this.mjeseci[this.currentMonth][this.chosenDay.d - 1].citanja
     },
     checkNextYear() {
-      return this.$q.localStorage.has('kalendar' + (this.today.y + 1))
+      return this.$q.localStorage.has('kalendar' + (this.getToday.y + 1))
     },
     mjeseci () {
-      return this.chosenYear === today.y ? groupBy(this.getKalendarObject, dan => dan.m) : groupBy(this.getKalendarObjectNY, dan => dan.m)
+      return this.chosenYear === this.getToday.y ? groupBy(this.getKalendarObject, dan => dan.m) : groupBy(this.getKalendarObjectNY, dan => dan.m)
     },
     filteredSveci (){
       if( this.searchText == ''){
@@ -286,10 +276,10 @@ export default {
       const duration = 500
       setScrollPosition(target, offset, duration)
     },
-    isToday (day) { return day.d === this.today.d.toString() && day.m === this.today.m.toString() && this.chosenYear === this.today.y },
+    isToday (day) { return day.d === this.getToday.d.toString() && day.m === this.getToday.m.toString() && this.chosenYear === this.getToday.y },
     isHoliday (day) { return !parseInt(day.radniDan) },
     isFeast (day) { return !!day.pomicni_blag },
-    isSunday (day) { return this.dayOfWeek2(day) === 'Ned' },
+    isSunday (day) { return this.dayOfWeek(day) === 'Ned' },
     getDayClasses (day) {
       let classes = []
       if (this.isToday(day)) classes.push('is-today')
@@ -353,7 +343,7 @@ export default {
     //     // console.log('I am triggered on both OK and Cancel')
     //   })
     // },
-    dayOfWeek2(day) {
+    dayOfWeek(day) {
       const danDate = new Date(this.chosenYear, parseInt(day.m) - 1, day.d)
       return date.formatDate(danDate, 'ddd')
     },
@@ -361,91 +351,7 @@ export default {
       return {
         height: offset ? `calc(100vh - ${offset}px)` : '100vh'
       }
-    },
-    MoonPhase(yr_v, d_v, m_v) {
-      // console.log(yr_v, d_v, m_v);
-      // '    /*
-      // '      calculates the moon phase (0-7), accurate To 1 segment.
-      // '      0 = > new moon.
-      // '      4 => full moon.
-      // '      */
-
-      let b
-      let c
-      let e //As Int
-      let jd //As Double
-      if(m_v < 3){
-          yr_v=yr_v-1
-          m_v = m_v+12
-      }
-      m_v=m_v+1
-      c = 365.25*yr_v
-      e = 30.6*m_v
-      jd = c+e+d_v-694039.09  /* jd Is total days elapsed */
-      jd = jd/29.53           /* divide by the moon cycle (29.53 days) */
-      b=Math.floor(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
-      jd = jd - b		  /* subtract integer part To leave fractional part of original jd */
-      b = jd*8 + 0.5	   /* scale fraction from 0-8 AND Round by adding 0.5 */
-      b =   b & 7		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
-      // return b
-        let moonImg
-        switch (b) {
-          case 0: moonImg = 'statics/moon0-40.png'; break
-          case 1: moonImg = 'statics/moon1-40.png'; break
-          case 2: moonImg = 'statics/moon2-40.png'; break
-          case 3: moonImg = 'statics/moon3-40.png'; break
-          case 4: moonImg = 'statics/moon4-40.png'; break
-          case 5: moonImg = 'statics/moon5-40.png'; break
-          case 6: moonImg = 'statics/moon6-40.png';console.log('moonImg'); break
-          case 7: moonImg = 'statics/moon7-40.png'; break
-          // default: moonImg = '';
-        }
-        return moonImg
     }
   }
 }
 </script>
-<style lang="sass" scoped>
-.day
-  padding: 1rem 0.5rem
-  .title
-    color: $red-10
-    font-weight: 700
-  .body
-    color: $brown
-  .caption
-    color: $brown
-  .day-icon
-    .day-in-week
-      text-align: center
-      font-size: 0.75rem
-      line-height: 1rem
-      font-weight: 800
-      letter-spacing: 2px
-      padding: 0
-      color: white
-    .date
-      padding: 0.5rem
-      line-height: 1.5rem
-      font-size: 1.25rem
-      width: 4.5rem
-      text-align: center
-      font-weight: 600
-  &.is-today
-    background-color: $brown-2
-  &.is-workingday
-    .day-in-week
-      background-color: $brown-5
-    .date
-      color: $brown-5
-  &.is-sunday
-    .day-in-week
-      background-color: $red-10
-    .date
-      color: $red-10
-  &.is-holiday
-    .day-in-week
-      background-color: $red-10
-    .date
-      color: $red-10
-</style>
