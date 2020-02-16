@@ -1,3 +1,5 @@
+import { date } from 'quasar'
+const now = new Date()
 export default function () {
           return {
                   // onlineStatus: null,
@@ -8,6 +10,12 @@ export default function () {
                   molitvenik: null,
                   settings: null,
                   settingsRemote: null,
+                  today: {
+                    datum: date.formatDate(now, 'D.M.YYYY.'),
+                    d: now.getDate(),
+                    m: now.getMonth() + 1,
+                    y: now.getFullYear()
+                  },
                   praznici: {
                     novaGodina: {
                       datum: '1.1.',

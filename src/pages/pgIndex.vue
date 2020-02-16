@@ -37,11 +37,11 @@
         <q-resize-observer @resize="onResize" />
       </div>
 
-        <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
-          <q-card class="q-pa-xs" style="width: 100%">
-          <div class="column justify-center ">
-            <div class="flex text-h7 justify-center text-weight-bold text-brown-7">
-              {{ getDate.datum }} <!-- <img :src="MoonPhase(2020,14,2)"> -->
+      <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
+        <q-card class="q-pa-sm bg-brown-4" style="width: 100%">
+          <div class="column justify-center text-white">
+            <div class="flex text-h7 justify-center text-weight-bold">
+              {{ getDate }}
             </div>
             <div class="flex text-caption justify-center">
               {{ getTodaysSaint.blagdan }}
@@ -57,15 +57,17 @@
             </div>
           </div>
         </q-card>
-        </div>
+        <q-resize-observer @resize="onResize" />
+      </div>
 
       <!-- <q-card class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer"> -->
       <div class="absolute-bottom q-pa-md flex items-center justify-center" ref="bottomContainer">
-        <q-card class="q-pa-xs" style="width: 100%">
-        <div class="column text-center text-body1 text-brown">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </div>
+        <q-card class="q-pa-sm bg-brown-4" style="width: 100%">
+          <div class="column text-center text-body1 text-white">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </div>
         </q-card>
+        <q-resize-observer @resize="onResize" />
       </div>
     </div>
     <q-dialog v-model="persistent" persistent transition-show="scale" transition-hide="scale">
@@ -138,27 +140,15 @@ export default {
     imgSrc () {
       return require('../assets/pozadina.jpg')
     },
-    ...mapGetters('main', ['getIsOnline', 'getKalendarObject', 'getTodaysSaint', 'getKalMolVersionLocal']),
+    ...mapGetters('main', ['getToday', 'getIsOnline', 'getKalendarObject', 'getTodaysSaint', 'getKalMolVersionLocal']),
     getDate (){
-      let datum = date.formatDate(Date.now(), 'dddd D.M.YYYY.')
-      let newDate = new Date()
-      let d = newDate.getDate() // `day` is 4
-      let m = newDate.getMonth() + 1// `day` is 4
-      let y = newDate.getFullYear() // `day` is 4
-      return {
-        datum: datum,
-        d: d,
-        m: m,
-        y: y,
-      }
+      return date.formatDate(Date.now(), 'dddd D.M.YYYY.')
     },
   },
   methods: {
     ...mapActions('main',['getKalendar']),
     ...mapMutations('main',['cleartateVars', 'setSuglasnostLS']),
     onResize () {
-      console.log(this.$refs.topContainer);
-      // const length = Math.min(this.$refs.midContainer.clientWidth, this.$refs.midContainer.clientHeight) / 16
       const topHeight = this.$refs.topContainer.clientHeight / 16
       const bottomHeight = this.$refs.bottomContainer.clientHeight / 16
       const midHeight = (this.$refs.midContainer.clientHeight / 16) - topHeight - bottomHeight
@@ -186,51 +176,9 @@ export default {
       }
     },
     tweakHeight(offset) {
-      console.log(offset)
       return {
         height: offset ? `calc(100vh - ${offset}px)` : '100vh'
       }
-    },
-
-    MoonPhase(yr_v, d_v, m_v) {
-      // console.log(yr_v, d_v, m_v);
-      // '    /*
-      // '      calculates the moon phase (0-7), accurate To 1 segment.
-      // '      0 = > new moon.
-      // '      4 => full moon.
-      // '      */
-
-      let b
-      let c
-      let e //As Int
-      let jd //As Double
-      if(m_v < 3){
-          yr_v=yr_v-1
-          m_v = m_v+12
-      }
-      m_v=m_v+1
-      c = 365.25*yr_v
-      e = 30.6*m_v
-      jd = c+e+d_v-694039.09  /* jd Is total days elapsed */
-      jd = jd/29.53           /* divide by the moon cycle (29.53 days) */
-      b=Math.floor(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
-      jd = jd - b		  /* subtract integer part To leave fractional part of original jd */
-      b = jd*8 + 0.5	   /* scale fraction from 0-8 AND Round by adding 0.5 */
-      b =   b & 7		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
-      // return b
-        let moonImg
-        switch (b) {
-          case 0: moonImg = 'statics/moon0-40.png'; break
-          case 1: moonImg = 'statics/moon1-40.png'; break
-          case 2: moonImg = 'statics/moon2-40.png'; break
-          case 3: moonImg = 'statics/moon3-40.png'; break
-          case 4: moonImg = 'statics/moon4-40.png'; break
-          case 5: moonImg = 'statics/moon5-40.png'; break
-          case 6: moonImg = 'statics/moon6-40.png';console.log('moonImg'); break
-          case 7: moonImg = 'statics/moon7-40.png'; break
-          // default: moonImg = '';
-        }
-        return moonImg
     }
   }
 }

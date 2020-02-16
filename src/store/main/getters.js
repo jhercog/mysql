@@ -9,6 +9,9 @@ const nextYear = newDate.getFullYear() + 1
 export function someGetter (state) {
 }
 */
+export function getToday (state) {
+  return state.today
+}
 export function getShowDialog (state) {
   return state.showDialog
 }
@@ -62,30 +65,21 @@ export function getPraznici (state) {
 // }
 
 export function getTodaysSaint (state) {
-
-  const newDate = new Date()
-  const todayDay = newDate.getDate()
-  const todayMonth = newDate.getMonth() + 1
-
-  if (state.kalendar==null) {
-    return null;
+  let sveci = {
+    sveci: '',
+    blagdan: '',
+    prazblag: '',
+    pomicni_blag: '',
   }
-
-  let daysInMonth = state.kalendar.filter(item => {
-    return item.m === todayMonth.toString()
-  })
-
-  let day = daysInMonth.find(item => {
-    return item.d === todayDay.toString()
-  })
-
-  return {
-    sveci: day.sveci,
-    blagdan: day.blagdan,
-    prazblag: day.prazblag,
-    pomicni_blag: day.pomicni_blag,
+  if (state.kalendar) {
+    let month = state.kalendar.filter(item => item.m === state.today.m.toString())
+    let day = month.find(item => item.d === state.today.m.toString())
+    sveci.sveci = day.sveci
+    sveci.blagdan = day.blagdan
+    sveci.prazblag = day.prazblag
+    sveci.pomicni_blag = day.pomicni_blag
   }
-
+  return sveci
 }
 
 export function getKalMolVersionLocal (state) {
@@ -153,6 +147,7 @@ export function getGodine ( state ) {
   // console.log('..........', god2);
   // return {godina1:god1,godina2:god2}
 }
+
 // export async function getKalMolVersionRemote (commit,state) {
 // console.log('getKalVersion getter');
 //

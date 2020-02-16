@@ -58,12 +58,7 @@
               <div v-if="getColor(dan.boja)[0]=='pink-3'" :class="'bg-purple'" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" />
             </q-item-section>
             <q-item-section side>
-              <!-- {{dan.m}} -->
-              <!-- <div :class="'bg-' + getColor(dan.boja)[0]" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" /> -->
-              <!-- <q-avatar size="xs" color="brown">
-                <img :src="MoonPhase(today.y,dan.d,dan.m)">
-              </q-avatar> -->
-              <q-icon class="wi wi-moon-new" />
+              <q-icon color="brown" :class="moonPhase(parseInt(dan.d), parseInt(dan.m), parseInt(getToday.y))" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -74,8 +69,8 @@
   <div ref="pageHeader" class="absolute-top">
     <div>
       <div v-if="checkNextYear" class="row justify-center q-py-md">
-        <q-btn flat v-if="checkNextYear" rounded color="brown" size="1rem" :label="today.y" @click="chosenYear = today.y"/>
-        <q-btn v-if="checkNextYear" flat rounded color="brown" size="1rem" :label="today.y + 1" @click="chosenYear = today.y + 1" />
+        <q-btn flat v-if="checkNextYear" rounded color="brown" size="1rem" :label="getToday.y" @click="chosenYear = getToday.y"/>
+        <q-btn v-if="checkNextYear" flat rounded color="brown" size="1rem" :label="getToday.y + 1" @click="chosenYear = getToday.y + 1" />
       </div>
       <q-tabs v-model="currentMonth" dense class="text-grey" active-color="primary" indicator-color="primary" align="justify">
         <q-tab
@@ -98,20 +93,20 @@
     <q-card>
       <q-toolbar
         :class="{
-          'bg-red-10': dayOfWeek2(chosenDay) === 'Ned' && chosenDay.d !== today.d.toString(),
-          'bg-brown-5': dayOfWeek2(chosenDay) !== 'Ned' && chosenDay.d !== today.d.toString(),
-          'bg-blue': chosenDay.d === today.d.toString()
+          'bg-red-10': dayOfWeek2(chosenDay) === 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-brown-5': dayOfWeek2(chosenDay) !== 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-blue': chosenDay.d === getToday.d.toString()
         }"
       >
         <q-avatar color="white">
           <img src="statics/katkalikona.png">
         </q-avatar>
-        <q-toolbar-title class="text-white">
-          <span class="text-weight-bold">{{ dayOfWeek2(chosenDay) }}, </span>{{ chosenDay.d }}.{{ currentMonth }}.{{ today.y }}.
-        </q-toolbar-title>
-        <q-avatar size="xs" color="brown">
-          <img :src="MoonPhase(today.y,chosenDay.d,chosenDay.m)">
-        </q-avatar>
+        <div class="text-white text-h6 q-pl-md">
+          {{ dayOfWeek2(chosenDay) }}, {{ chosenDay.d }}.{{ currentMonth }}.{{ getToday.y }}.
+        </div>
+        <q-separator dark vertical inset class="q-mx-md"/>
+        <q-icon color="white" size="1.25rem" :class="moonPhase(parseInt(chosenDay.d), parseInt(currentMonth), parseInt(getToday.y)).replace('alt-','')" />
+        <q-space/>
         <q-btn flat round dense color="white" icon="close" v-close-popup />
       </q-toolbar>
 
@@ -195,23 +190,15 @@ import axios from 'axios'
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex'
 import { scroll } from 'quasar'
 const { getScrollTarget, setScrollPosition } = scroll
-const now = new Date()
-const today = {
-  datum: date.formatDate(now, 'D.M.YYYY.'),
-  d: now.getDate(),
-  m: now.getMonth() + 1,
-  y: now.getFullYear()
-}
 export default {
   data() {
     return {
-      croDates: this.$q.lang.date, // Ovo je date objekt localea koji smo postavili u App.vue
-      today,
-      currentMonth: today.m,
+      croDates: this.$q.lang.date,
+      currentMonth: null,
       danUmjesecu: 1,
       dayDetails: false,
       chosenDay: null,
-      chosenYear: today.y,
+      chosenYear: null,
       pageHeaderHeight: 0,
       searchText: '',
       items: null,
@@ -225,8 +212,9 @@ export default {
     }
   },
   created() {
-    this.currentMonth = this.today.m
-    this.chosenDay = this.mjeseci[this.currentMonth][this.today.d - 1]
+    this.currentMonth = this.getToday.m
+    this.chosenYear = this.getToday.y
+    this.chosenDay = this.mjeseci[this.currentMonth][this.getToday.d - 1]
 
     this.getKalendar()
        .then(res => {
@@ -238,10 +226,10 @@ export default {
     },
   mounted () {
     this.pageHeaderHeight = this.$refs.pageHeader.clientHeight
-    this.scrollToDay(this.$refs['day_' + (this.today.d - 1)][0].$el)
+    this.scrollToDay(this.$refs['day_' + (this.getToday.d - 1)][0].$el)
   },
   computed: {
-    ...mapGetters('main', ['getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
+    ...mapGetters('main', ['getToday','getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
     showDialog: {
       get () {
         return this.$store.getters['main/getShowDialog']
@@ -258,10 +246,10 @@ export default {
       return this.mjeseci[this.currentMonth][this.chosenDay.d - 1].citanja
     },
     checkNextYear() {
-      return this.$q.localStorage.has('kalendar' + (this.today.y + 1))
+      return this.$q.localStorage.has('kalendar' + (this.getToday.y + 1))
     },
     mjeseci () {
-      return this.chosenYear === today.y ? groupBy(this.getKalendarObject, dan => dan.m) : groupBy(this.getKalendarObjectNY, dan => dan.m)
+      return this.chosenYear === this.getToday.y ? groupBy(this.getKalendarObject, dan => dan.m) : groupBy(this.getKalendarObjectNY, dan => dan.m)
     },
     filteredSveci (){
       if( this.searchText == ''){
@@ -287,7 +275,7 @@ export default {
       const duration = 500
       setScrollPosition(target, offset, duration)
     },
-    isToday (day) { return day.d === this.today.d.toString() && day.m === this.today.m.toString() && this.chosenYear === this.today.y },
+    isToday (day) { return day.d === this.getToday.d.toString() && day.m === this.getToday.m.toString() && this.chosenYear === this.getToday.y },
     isHoliday (day) { return !parseInt(day.radniDan) },
     isFeast (day) { return !!day.pomicni_blag },
     isSunday (day) { return this.dayOfWeek2(day) === 'Ned' },
@@ -363,45 +351,57 @@ export default {
         height: offset ? `calc(100vh - ${offset}px)` : '100vh'
       }
     },
-    MoonPhase(yr_v, d_v, m_v) {
-      // console.log(yr_v, d_v, m_v);
-      // '    /*
-      // '      calculates the moon phase (0-7), accurate To 1 segment.
-      // '      0 = > new moon.
-      // '      4 => full moon.
-      // '      */
-
+    moonPhase(day, month, year) {
       let b
       let c
       let e //As Int
       let jd //As Double
-      if(m_v < 3){
-          yr_v=yr_v-1
-          m_v = m_v+12
+      if(month < 3){
+          year--
+          month += 12
       }
-      m_v=m_v+1
-      c = 365.25*yr_v
-      e = 30.6*m_v
-      jd = c+e+d_v-694039.09  /* jd Is total days elapsed */
-      jd = jd/29.53           /* divide by the moon cycle (29.53 days) */
-      b=Math.floor(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
-      jd = jd - b		  /* subtract integer part To leave fractional part of original jd */
-      b = jd*8 + 0.5	   /* scale fraction from 0-8 AND Round by adding 0.5 */
-      b =   b & 7		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
-      // return b
-        let moonImg
-        switch (b) {
-          case 0: moonImg = 'statics/moon0-40.png'; break
-          case 1: moonImg = 'statics/moon1-40.png'; break
-          case 2: moonImg = 'statics/moon2-40.png'; break
-          case 3: moonImg = 'statics/moon3-40.png'; break
-          case 4: moonImg = 'statics/moon4-40.png'; break
-          case 5: moonImg = 'statics/moon5-40.png'; break
-          case 6: moonImg = 'statics/moon6-40.png';console.log('moonImg'); break
-          case 7: moonImg = 'statics/moon7-40.png'; break
-          // default: moonImg = '';
-        }
-        return moonImg
+      ++month
+      c = 365.25 * year
+      e = 30.6 * month
+      jd = c + e + day - 694039.09  /* jd Is total days elapsed */
+      jd /= 29.5305882           /* divide by the moon cycle (29.53 days) */
+      b = parseInt(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
+      jd -= b		  /* subtract integer part To leave fractional part of original jd */
+      b = Math.round(jd * 28)
+      b =   b & 27		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
+      let moonClass
+      switch (b) {
+        case 0: moonClass = 'wi wi-moon-alt-new'; break
+        case 1: moonClass = 'wi wi-moon-alt-waxing-crescent-1'; break
+        case 2: moonClass = 'wi wi-moon-alt-waxing-crescent-2'; break
+        case 3: moonClass = 'wi wi-moon-alt-waxing-crescent-3'; break
+        case 4: moonClass = 'wi wi-moon-alt-waxing-crescent-4'; break
+        case 5: moonClass = 'wi wi-moon-alt-waxing-crescent-5'; break
+        case 6: moonClass = 'wi wi-moon-alt-waxing-crescent-6'; break
+        case 7: moonClass = 'wi wi-moon-alt-first-quarter'; break
+        case 8: moonClass = 'wi wi-moon-alt-waxing-gibbous-1'; break
+        case 9: moonClass = 'wi wi-moon-alt-waxing-gibbous-2'; break
+        case 10: moonClass = 'wi wi-moon-alt-waxing-gibbous-3'; break
+        case 11: moonClass = 'wi wi-moon-alt-waxing-gibbous-4'; break
+        case 12: moonClass = 'wi wi-moon-alt-waxing-gibbous-5'; break
+        case 13: moonClass = 'wi wi-moon-alt-waxing-gibbous-6'; break
+        case 14: moonClass = 'wi wi-moon-alt-full'; break
+        case 15: moonClass = 'wi wi-moon-alt-waning-gibbous-1'; break
+        case 16: moonClass = 'wi wi-moon-alt-waning-gibbous-2'; break
+        case 17: moonClass = 'wi wi-moon-alt-waning-gibbous-3'; break
+        case 18: moonClass = 'wi wi-moon-alt-waning-gibbous-4'; break
+        case 19: moonClass = 'wi wi-moon-alt-waning-gibbous-5'; break
+        case 20: moonClass = 'wi wi-moon-alt-waning-gibbous-6'; break
+        case 21: moonClass = 'wi wi-moon-alt-third-quarter'; break
+        case 22: moonClass = 'wi wi-moon-alt-waning-crescent-1'; break
+        case 23: moonClass = 'wi wi-moon-alt-waning-crescent-2'; break
+        case 24: moonClass = 'wi wi-moon-alt-waning-crescent-3'; break
+        case 25: moonClass = 'wi wi-moon-alt-waning-crescent-4'; break
+        case 26: moonClass = 'wi wi-moon-alt-waning-crescent-5'; break
+        case 27: moonClass = 'wi wi-moon-alt-waning-crescent-6'; break
+        default: moonClass = 'wi wi-moon-alt-new';
+      }
+      return moonClass
     }
   }
 }
