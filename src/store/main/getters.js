@@ -64,22 +64,24 @@ export function getPraznici (state) {
 //   return state.praznici
 // }
 
-export function getTodaysSaint (state) {
-  let sveci = {
+export function getTodaysData (state) {
+  let data = {
     sveci: '',
     blagdan: '',
     prazblag: '',
     pomicni_blag: '',
+    radniDan: ''
   }
   if (state.kalendar) {
     let month = state.kalendar.filter(item => item.m === state.today.m.toString())
-    let day = month.find(item => item.d === state.today.m.toString())
-    sveci.sveci = day.sveci
-    sveci.blagdan = day.blagdan
-    sveci.prazblag = day.prazblag
-    sveci.pomicni_blag = day.pomicni_blag
+    let day = month.find(item => item.d === state.today.d.toString())
+    data.sveci = day.sveci
+    data.blagdan = day.blagdan
+    data.prazblag = day.prazblag
+    data.pomicni_blag = day.pomicni_blag
+    data.radniDan = day.radniDan
   }
-  return sveci
+  return data
 }
 
 export function getKalMolVersionLocal (state) {
@@ -146,6 +148,58 @@ export function getGodine ( state ) {
   // console.log('..........', god1);
   // console.log('..........', god2);
   // return {godina1:god1,godina2:god2}
+}
+
+export function getMoonClass ( state ) {
+  return ({ day, month, year }) => {
+    let b, c, e, jd
+    if(month < 3){
+        year--
+        month += 12
+    }
+    ++month
+    c = 365.25 * year
+    e = 30.6 * month
+    jd = c + e + day - 694039.09  /* jd Is total days elapsed */
+    jd /= 29.5305882           /* divide by the moon cycle (29.53 days) */
+    b = parseInt(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
+    jd -= b		  /* subtract integer part To leave fractional part of original jd */
+    b = Math.round(jd * 28)
+    b =   b & 27		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
+    let moonClass
+    switch (b) {
+      case 0: moonClass = 'wi wi-moon-alt-new'; break
+      case 1: moonClass = 'wi wi-moon-alt-waxing-crescent-1'; break
+      case 2: moonClass = 'wi wi-moon-alt-waxing-crescent-2'; break
+      case 3: moonClass = 'wi wi-moon-alt-waxing-crescent-3'; break
+      case 4: moonClass = 'wi wi-moon-alt-waxing-crescent-4'; break
+      case 5: moonClass = 'wi wi-moon-alt-waxing-crescent-5'; break
+      case 6: moonClass = 'wi wi-moon-alt-waxing-crescent-6'; break
+      case 7: moonClass = 'wi wi-moon-alt-first-quarter'; break
+      case 8: moonClass = 'wi wi-moon-alt-waxing-gibbous-1'; break
+      case 9: moonClass = 'wi wi-moon-alt-waxing-gibbous-2'; break
+      case 10: moonClass = 'wi wi-moon-alt-waxing-gibbous-3'; break
+      case 11: moonClass = 'wi wi-moon-alt-waxing-gibbous-4'; break
+      case 12: moonClass = 'wi wi-moon-alt-waxing-gibbous-5'; break
+      case 13: moonClass = 'wi wi-moon-alt-waxing-gibbous-6'; break
+      case 14: moonClass = 'wi wi-moon-alt-full'; break
+      case 15: moonClass = 'wi wi-moon-alt-waning-gibbous-1'; break
+      case 16: moonClass = 'wi wi-moon-alt-waning-gibbous-2'; break
+      case 17: moonClass = 'wi wi-moon-alt-waning-gibbous-3'; break
+      case 18: moonClass = 'wi wi-moon-alt-waning-gibbous-4'; break
+      case 19: moonClass = 'wi wi-moon-alt-waning-gibbous-5'; break
+      case 20: moonClass = 'wi wi-moon-alt-waning-gibbous-6'; break
+      case 21: moonClass = 'wi wi-moon-alt-third-quarter'; break
+      case 22: moonClass = 'wi wi-moon-alt-waning-crescent-1'; break
+      case 23: moonClass = 'wi wi-moon-alt-waning-crescent-2'; break
+      case 24: moonClass = 'wi wi-moon-alt-waning-crescent-3'; break
+      case 25: moonClass = 'wi wi-moon-alt-waning-crescent-4'; break
+      case 26: moonClass = 'wi wi-moon-alt-waning-crescent-5'; break
+      case 27: moonClass = 'wi wi-moon-alt-waning-crescent-6'; break
+      default: moonClass = 'wi wi-moon-alt-new';
+    }
+    return moonClass
+  }
 }
 
 // export async function getKalMolVersionRemote (commit,state) {

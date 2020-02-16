@@ -39,7 +39,7 @@
             <q-item-section side>
               <q-card flat bordered class="day-icon">
                 <q-card-section class="day-in-week">
-                  {{ dayOfWeek2(dan).toUpperCase() }}
+                  {{ dayOfWeek(dan).toUpperCase() }}
                 </q-card-section>
                 <q-card-section class="date">
                   {{ dan.d }}.{{ dan.m }}.
@@ -58,7 +58,7 @@
               <div v-if="getColor(dan.boja)[0]=='pink-3'" :class="'bg-purple'" style="width: 0.75rem; height: 0.75rem; border-radius: 0.375rem; border-style:solid; border-width:1px;" />
             </q-item-section>
             <q-item-section side>
-              <q-icon color="brown" :class="moonPhase(parseInt(dan.d), parseInt(dan.m), parseInt(getToday.y))" />
+              <q-icon color="brown" :class="getMoonClass({ day: parseInt(dan.d), month: parseInt(dan.m), year: parseInt(getToday.y) })" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -93,8 +93,8 @@
     <q-card>
       <q-toolbar
         :class="{
-          'bg-red-10': dayOfWeek2(chosenDay) === 'Ned' && chosenDay.d !== getToday.d.toString(),
-          'bg-brown-5': dayOfWeek2(chosenDay) !== 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-red-10': dayOfWeek(chosenDay) === 'Ned' && chosenDay.d !== getToday.d.toString(),
+          'bg-brown-5': dayOfWeek(chosenDay) !== 'Ned' && chosenDay.d !== getToday.d.toString(),
           'bg-blue': chosenDay.d === getToday.d.toString()
         }"
       >
@@ -102,10 +102,10 @@
           <img src="statics/katkalikona.png">
         </q-avatar>
         <div class="text-white text-h6 q-pl-md">
-          {{ dayOfWeek2(chosenDay) }}, {{ chosenDay.d }}.{{ currentMonth }}.{{ getToday.y }}.
+          {{ dayOfWeek(chosenDay) }}, {{ chosenDay.d }}.{{ currentMonth }}.{{ getToday.y }}.
         </div>
         <q-separator dark vertical inset class="q-mx-md"/>
-        <q-icon color="white" size="1.25rem" :class="moonPhase(parseInt(chosenDay.d), parseInt(currentMonth), parseInt(getToday.y)).replace('alt-','')" />
+        <q-icon color="white" size="1.25rem" :class="getMoonClass({ day: parseInt(chosenDay.d), month: parseInt(currentMonth), year: parseInt(getToday.y) }).replace('alt-','')" />
         <q-space/>
         <q-btn flat round dense color="white" icon="close" v-close-popup />
       </q-toolbar>
@@ -229,7 +229,7 @@ export default {
     this.scrollToDay(this.$refs['day_' + (this.getToday.d - 1)][0].$el)
   },
   computed: {
-    ...mapGetters('main', ['getToday','getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
+    ...mapGetters('main', ['getToday', 'getMoonClass', 'getIsOnline', 'getKalendarObject', 'getKalendarObjectNY', 'getGodine']),
     showDialog: {
       get () {
         return this.$store.getters['main/getShowDialog']
@@ -278,7 +278,7 @@ export default {
     isToday (day) { return day.d === this.getToday.d.toString() && day.m === this.getToday.m.toString() && this.chosenYear === this.getToday.y },
     isHoliday (day) { return !parseInt(day.radniDan) },
     isFeast (day) { return !!day.pomicni_blag },
-    isSunday (day) { return this.dayOfWeek2(day) === 'Ned' },
+    isSunday (day) { return this.dayOfWeek(day) === 'Ned' },
     getDayClasses (day) {
       let classes = []
       if (this.isToday(day)) classes.push('is-today')
@@ -342,7 +342,7 @@ export default {
     //     // console.log('I am triggered on both OK and Cancel')
     //   })
     // },
-    dayOfWeek2(day) {
+    dayOfWeek(day) {
       const danDate = new Date(this.chosenYear, parseInt(day.m) - 1, day.d)
       return date.formatDate(danDate, 'ddd')
     },
@@ -350,103 +350,7 @@ export default {
       return {
         height: offset ? `calc(100vh - ${offset}px)` : '100vh'
       }
-    },
-    moonPhase(day, month, year) {
-      let b
-      let c
-      let e //As Int
-      let jd //As Double
-      if(month < 3){
-          year--
-          month += 12
-      }
-      ++month
-      c = 365.25 * year
-      e = 30.6 * month
-      jd = c + e + day - 694039.09  /* jd Is total days elapsed */
-      jd /= 29.5305882           /* divide by the moon cycle (29.53 days) */
-      b = parseInt(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
-      jd -= b		  /* subtract integer part To leave fractional part of original jd */
-      b = Math.round(jd * 28)
-      b =   b & 27		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
-      let moonClass
-      switch (b) {
-        case 0: moonClass = 'wi wi-moon-alt-new'; break
-        case 1: moonClass = 'wi wi-moon-alt-waxing-crescent-1'; break
-        case 2: moonClass = 'wi wi-moon-alt-waxing-crescent-2'; break
-        case 3: moonClass = 'wi wi-moon-alt-waxing-crescent-3'; break
-        case 4: moonClass = 'wi wi-moon-alt-waxing-crescent-4'; break
-        case 5: moonClass = 'wi wi-moon-alt-waxing-crescent-5'; break
-        case 6: moonClass = 'wi wi-moon-alt-waxing-crescent-6'; break
-        case 7: moonClass = 'wi wi-moon-alt-first-quarter'; break
-        case 8: moonClass = 'wi wi-moon-alt-waxing-gibbous-1'; break
-        case 9: moonClass = 'wi wi-moon-alt-waxing-gibbous-2'; break
-        case 10: moonClass = 'wi wi-moon-alt-waxing-gibbous-3'; break
-        case 11: moonClass = 'wi wi-moon-alt-waxing-gibbous-4'; break
-        case 12: moonClass = 'wi wi-moon-alt-waxing-gibbous-5'; break
-        case 13: moonClass = 'wi wi-moon-alt-waxing-gibbous-6'; break
-        case 14: moonClass = 'wi wi-moon-alt-full'; break
-        case 15: moonClass = 'wi wi-moon-alt-waning-gibbous-1'; break
-        case 16: moonClass = 'wi wi-moon-alt-waning-gibbous-2'; break
-        case 17: moonClass = 'wi wi-moon-alt-waning-gibbous-3'; break
-        case 18: moonClass = 'wi wi-moon-alt-waning-gibbous-4'; break
-        case 19: moonClass = 'wi wi-moon-alt-waning-gibbous-5'; break
-        case 20: moonClass = 'wi wi-moon-alt-waning-gibbous-6'; break
-        case 21: moonClass = 'wi wi-moon-alt-third-quarter'; break
-        case 22: moonClass = 'wi wi-moon-alt-waning-crescent-1'; break
-        case 23: moonClass = 'wi wi-moon-alt-waning-crescent-2'; break
-        case 24: moonClass = 'wi wi-moon-alt-waning-crescent-3'; break
-        case 25: moonClass = 'wi wi-moon-alt-waning-crescent-4'; break
-        case 26: moonClass = 'wi wi-moon-alt-waning-crescent-5'; break
-        case 27: moonClass = 'wi wi-moon-alt-waning-crescent-6'; break
-        default: moonClass = 'wi wi-moon-alt-new';
-      }
-      return moonClass
     }
   }
 }
 </script>
-<style lang="sass" scoped>
-.day
-  padding: 1rem 0.5rem
-  .title
-    color: $red-10
-    font-weight: 700
-  .body
-    color: $brown
-  .caption
-    color: $brown
-  .day-icon
-    .day-in-week
-      text-align: center
-      font-size: 0.75rem
-      line-height: 1rem
-      font-weight: 800
-      letter-spacing: 2px
-      padding: 0
-      color: white
-    .date
-      padding: 0.5rem
-      line-height: 1.5rem
-      font-size: 1.25rem
-      width: 4.5rem
-      text-align: center
-      font-weight: 600
-  &.is-today
-    background-color: $brown-2
-  &.is-workingday
-    .day-in-week
-      background-color: $brown-5
-    .date
-      color: $brown-5
-  &.is-sunday
-    .day-in-week
-      background-color: $red-10
-    .date
-      color: $red-10
-  &.is-holiday
-    .day-in-week
-      background-color: $red-10
-    .date
-      color: $red-10
-</style>

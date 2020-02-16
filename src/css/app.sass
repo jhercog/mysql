@@ -1,0 +1,50 @@
+// app global css in SCSS form
+.day
+  width: auto
+  .title
+    color: $red-10
+    font-weight: 700
+  .body
+    color: $brown
+  .caption
+    color: $brown
+  .day-icon
+    .day-in-week
+      text-align: center
+      font-size: 0.75rem
+      line-height: 1rem
+      font-weight: 800
+      letter-spacing: 2px
+      padding: 0
+      color: white
+    .date
+      padding: 0.5rem
+      line-height: 1.5rem
+      font-size: 1.25rem
+      width: 4.5rem
+      text-align: center
+      font-weight: 600
+    .year
+      text-align: center
+      font-size: 0.75rem
+      line-height: 1rem
+      font-weight: 800
+      padding: 0
+      color: white
+  &.is-today
+    background-color: $brown-2
+  &.is-workingday
+    .day-in-week, .year
+      background-color: $brown-5
+    .date
+      color: $brown-5
+  &.is-sunday
+    .day-in-week, .year
+      background-color: $red-10
+    .date
+      color: $red-10
+  &.is-holiday
+    .day-in-week, .year
+      background-color: $red-10
+    .date
+      color: $red-10

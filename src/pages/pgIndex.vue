@@ -3,7 +3,7 @@
     <div class="column fit bg-brown-1">
 
       <div
-        class="fit overflow-hidden flex items-center justify-center column q-pa-md"
+        class="fit overflow-hidden flex items-center column q-pa-md"
         ref="midContainer"
         :style="midStyle"
       >
@@ -26,7 +26,7 @@
             align="left"
             ripple no-caps
           >
-            <q-icon :size="iconSize" :name="section.icon" class="q-ml-sm" />
+            <q-icon :size="iconSize" :name="section.icon" class="q-ml-sm" :style="{ width: iconWidth }"/>
             <q-separator dark vertical inset class="q-mx-lg"/>
             <div class="text-h6">{{ section.label }}</div>
             <q-space/>
@@ -38,22 +38,41 @@
       </div>
 
       <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
-        <q-card class="q-pa-sm bg-brown-4" style="width: 100%">
-          <div class="column justify-center text-white">
-            <div class="flex text-h7 justify-center text-weight-bold">
+        <q-card class="q-py-sm q-pl-lg q-pr-md" style="width: 100%">
+          <div class="row day" :class="getDayClasses">
+            <q-card flat bordered class="day-icon" ref="dayIcon">
+              <q-card-section class="day-in-week">
+                {{ dayOfWeek.toUpperCase() }}
+              </q-card-section>
+              <q-card-section class="date">
+                {{ getToday.d }}.{{ getToday.m }}
+              </q-card-section>
+              <q-card-section class="year">
+                {{ getToday.y }}
+              </q-card-section>
+            </q-card>
+            <q-separator vertical inset class="q-mx-lg"/>
+            <!-- <div class="flex text-h7 justify-center text-weight-bold">
               {{ getDate }}
+            </div> -->
+            <div class="column text-brown justify-center">
+              <div class="flex">
+                {{ getTodaysData.prazblag }}
+              </div>
+              <div class="flex">
+                {{ getTodaysData.pomicni_blag }}
+              </div>
+              <div class="flex">
+                {{ getTodaysData.sveci }}
+              </div>
+              <div class="flex text-caption">
+                {{ getTodaysData.blagdan }}
+              </div>
             </div>
-            <div class="flex text-caption justify-center">
-              {{ getTodaysSaint.blagdan }}
-            </div>
-            <div class="flex justify-center">
-              {{ getTodaysSaint.prazblag }}
-            </div>
-            <div class="flex justify-center">
-              {{ getTodaysSaint.pomicni_blag }}
-            </div>
-            <div class="flex justify-center text-center text-weight-bold">
-              {{ getTodaysSaint.sveci }}
+            <q-space/>
+            <q-separator vertical inset class="q-mx-lg"/>
+            <div class="flex items-center">
+              <q-icon size="xs" :class="getMoonClass({ day: parseInt(getToday.d), month: parseInt(getToday.m), year: parseInt(getToday.y) })" class="q-mr-sm" />
             </div>
           </div>
         </q-card>
@@ -62,9 +81,13 @@
 
       <!-- <q-card class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer"> -->
       <div class="absolute-bottom q-pa-md flex items-center justify-center" ref="bottomContainer">
-        <q-card class="q-pa-sm bg-brown-4" style="width: 100%">
-          <div class="column text-center text-body1 text-white">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        <q-card class="q-py-sm q-px-md" style="width: 100%">
+          <div class="row items-center">
+            <q-icon :size="iconSize" name="mdi-format-quote-open" color="brown-2" class="q-ml-sm" :style="{ width: iconWidth }"/>
+            <q-separator vertical inset class="q-mx-lg"/>
+            <div class="col text-body1 text-brown flex items-center">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </div>
           </div>
         </q-card>
         <q-resize-observer @resize="onResize" />
@@ -119,12 +142,13 @@ export default {
       gridStyle: {},
       cellStyle: {},
       iconSize: null,
+      iconWidth: null,
       mjeseci: null,
       svetacDana: null,
       persistent: false
     }
   },
-  created () {
+  async created () {
     this.getKalendar()
       .then(res => {
         this.mjeseci = groupBy(this.getKalendarObject, dan => dan.m)
@@ -137,13 +161,26 @@ export default {
     this.onResize()
   },
   computed: {
+    ...mapGetters('main', ['getToday', 'getMoonClass', 'getIsOnline', 'getKalendarObject', 'getTodaysData', 'getKalMolVersionLocal']),
     imgSrc () {
       return require('../assets/pozadina.jpg')
     },
-    ...mapGetters('main', ['getToday', 'getIsOnline', 'getKalendarObject', 'getTodaysSaint', 'getKalMolVersionLocal']),
-    getDate (){
+    getDate () {
       return date.formatDate(Date.now(), 'dddd D.M.YYYY.')
     },
+    dayOfWeek () {
+      const danDate = new Date(this.getToday.y, this.getToday.m - 1, this.getToday.d)
+      return date.formatDate(danDate, 'ddd')
+    },
+    isHoliday () { return !parseInt(this.getTodaysData.radniDan) },
+    isSunday () { return this.dayOfWeek === 'Ned' },
+    getDayClasses () {
+      let classes = []
+      if (!this.isSunday && !this.isHoliday) classes.push('is-workingday')
+      if (this.isSunday) classes.push('is-sunday')
+      if (this.isHoliday) classes.push('is-holiday')
+      return classes
+    }
   },
   methods: {
     ...mapActions('main',['getKalendar']),
@@ -152,6 +189,7 @@ export default {
       const topHeight = this.$refs.topContainer.clientHeight / 16
       const bottomHeight = this.$refs.bottomContainer.clientHeight / 16
       const midHeight = (this.$refs.midContainer.clientHeight / 16) - topHeight - bottomHeight
+      const iconWidth = (this.$refs.dayIcon.$el.clientWidth / 16)
       const cellSize = ((midHeight - 1.5) / 3) * 0.9
       this.midStyle = {
         paddingTop: topHeight + 'rem',
@@ -166,6 +204,7 @@ export default {
         margin: '0.25rem'
       }
       this.iconSize = (cellSize / 3 ) + 'rem'
+      this.iconWidth = iconWidth + 'rem'
     },
     checkSuglasnost() {
       console.log('check suglasnost = ',this.getSuglasnostLS);
