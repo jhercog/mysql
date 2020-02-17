@@ -2,24 +2,27 @@
 // https://quasar.dev/quasar-cli/quasar-conf-js
 
 module.exports = function (ctx) {
+  const path = require('path') // Webpack Aliases
+  const fs = require('fs') // Https config
   return {
     preFetch: true,
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/cli-documentation/boot-files
     boot: [
-      'axios'
+      'axios',
+      'weathericons'
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: [
-      'app.scss'
+      'app.sass'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
-      // 'mdi-v4',
+      'mdi-v4',
       // 'fontawesome-v5',
       // 'eva-icons',
       // 'themify',
@@ -68,6 +71,19 @@ module.exports = function (ctx) {
 
       // https://quasar.dev/quasar-cli/cli-documentation/handling-webpack
       extendWebpack (cfg) {
+        cfg.resolve.alias = {
+          // This adds the existing aliases
+          ...cfg.resolve.alias,
+
+          // Add your own alias like this
+          font: path.resolve(__dirname, './src/css/fonts/weather-icons-master/font')
+        }
+        // cfg.module.rules.push(
+        //   {
+        //     test   : /\.scss$/,
+        //     loaders: ['style-loader', 'css-loader', 'resolve-url-loader', 'sass-loader?sourceMap']
+        //   }
+        // )
       }
     },
 

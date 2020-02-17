@@ -3,33 +3,81 @@
     <div class="column fit bg-brown-1">
 
       <div
-        class="fit overflow-hidden flex items-center justify-center"
+        class="fit overflow-hidden flex items-center column q-pa-md"
         ref="midContainer"
         :style="midStyle"
       >
-        <div :style="gridStyle" class="row">
-          <div
-            v-for="(section, index) in sections"
-            :key="'id_' + index"
-            :style="cellStyle"
-            class="col-8"
+        <div
+          v-for="(section, index) in sections"
+          :key="'id_' + index"
+          class="col full-width"
+          :class="{
+            'q-pb-xs': index < sections.length - 1,
+            'q-pb-none': index === sections.length - 1
+          }"
+        >
+          <q-btn
+            :color="section.color"
+            :to="section.to"
+            :type="section.href ? 'a' : 'button'"
+            :href="section.href ? section.href : null"
+            :target="section.href ? '_blank' : null"
+            class="fit main-menu-btn"
+            align="left"
+            ripple no-caps
           >
-            <q-btn
-              class="fit"
-              :color="section.color"
-              :to="section.to"
-              :type="section.href ? 'a' : 'button'"
-              :href="section.href ? section.href : null"
-              :target="section.href ? '_blank' : null"
-              stack glossy ripple no-caps
+            <q-icon :size="iconSize" :name="section.icon" :style="{ width: iconWidth }"/>
+            <div
+              class="q-px-sm"
+              :style="{
+                fontSize: $q.screen.lt.sm ? '0.875rem' : '1.25rem',
+                fontWeight: '700'
+              }"
             >
-              <q-icon :size="iconSize" :name="section.icon" class="col-grow"/>
-              <div class="col-shrink " style="line-height: 1rem">{{ section.label }}</div>
-            </q-btn>
-          </div>
+              {{ section.label }}
+            </div>
+            <q-space/>
+            <q-icon size="xs" name="mdi-arrow-right" class="q-mr-sm" />
+          </q-btn>
         </div>
         <q-resize-observer @resize="onResize" />
       </div>
+
+
+      <div class="absolute-top q-px-md q-pt-md q-pb-xs flex items-center justify-center text-brown" ref="topContainer">
+        <q-card class="q-py-sm q-px-sm" style="width: 100%">
+          <div class="row day no-wrap" :class="getDayClasses">
+            <q-card flat bordered class="day-icon" ref="dayIcon">
+              <q-card-section class="day-in-week">{{ dayOfWeek.toUpperCase() }}</q-card-section>
+              <q-card-section class="date">{{ getToday.d }}.{{ getToday.m }}</q-card-section>
+              <q-card-section class="year">{{ getToday.y }}</q-card-section>
+            </q-card>
+            <div class="column text-brown justify-center q-px-sm">
+              <div class="flex">{{ getTodaysData.prazblag }}</div>
+              <div class="flex">{{ getTodaysData.pomicni_blag }}</div>
+              <div class="flex">{{ getTodaysData.sveci }}</div>
+              <div class="flex text-caption">{{ getTodaysData.blagdan }}</div>
+            </div>
+            <q-space/>
+            <div class="flex">
+              <q-icon size="xs" :class="getMoonClass({ day: parseInt(getToday.d), month: parseInt(getToday.m), year: parseInt(getToday.y) })" />
+            </div>
+          </div>
+        </q-card>
+        <q-resize-observer @resize="onResize" />
+      </div>
+
+      <!-- <q-card class="absolute-bottom q-pa-lg flex items-center justify-center" ref="bottomContainer"> -->
+      <div class="absolute-bottom q-px-md q-pt-xs q-pb-md flex items-center justify-center" ref="bottomContainer">
+        <q-card class="q-pa-sm" style="width: 100%">
+          <div class="row items-center">
+            <q-icon :size="iconSize" name="mdi-comment-quote-outline" color="brown-2" :style="{ width: iconWidth }"/>
+            <div class="col text-brown flex items-center q-px-sm">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </div>
+          </div>
+        </q-card>
+        <q-resize-observer @resize="onResize" />
 
         <div class="absolute-top q-pa-md flex items-center justify-center text-brown" ref="topContainer">
           <q-card class="q-pa-xs" style="width: 100%">
@@ -60,6 +108,7 @@
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </div>
         </q-card>
+
       </div>
     </div>
     <q-dialog v-model="persistent" persistent transition-show="scale" transition-hide="scale">
@@ -103,6 +152,7 @@ const sections = [
   { label: 'Časoslov', icon: 'mdi-timer-sand', color: 'pink', href: 'https://bozanskicasoslov.wordpress.com/' },
   { label: 'Praznici u RH', icon: 'mdi-calendar-heart', color: 'purple', to: 'blagdani' }
 ]
+
 export default {
   data () {
     return {
@@ -111,12 +161,13 @@ export default {
       gridStyle: {},
       cellStyle: {},
       iconSize: null,
+      iconWidth: null,
       mjeseci: null,
       svetacDana: null,
       persistent: false
     }
   },
-  created () {
+  async created () {
     this.getKalendar()
       .then(res => {
         this.mjeseci = groupBy(this.getKalendarObject, dan => dan.m)
@@ -124,38 +175,45 @@ export default {
       .catch(error => {
         console.error(error)
       })
+    this.$q.screen.setSizes({ sm: 300, md: 500, lg: 1000, xl: 2000 })
   },
   mounted () {
     this.onResize()
   },
   computed: {
+    ...mapGetters('main', ['getToday', 'getMoonClass', 'getIsOnline', 'getKalendarObject', 'getTodaysData', 'getKalMolVersionLocal']),
     imgSrc () {
       return require('../assets/pozadina.jpg')
     },
-    ...mapGetters('main', ['getIsOnline', 'getKalendarObject', 'getTodaysSaint', 'getKalMolVersionLocal']),
-    getDate (){
-      let datum = date.formatDate(Date.now(), 'dddd D.M.YYYY.')
-      let newDate = new Date()
-      let d = newDate.getDate() // `day` is 4
-      let m = newDate.getMonth() + 1// `day` is 4
-      let y = newDate.getFullYear() // `day` is 4
-      return {
-        datum: datum,
-        d: d,
-        m: m,
-        y: y,
-      }
+    getDate () {
+      return date.formatDate(Date.now(), 'dddd D.M.YYYY.')
     },
+    dayOfWeek () {
+      const danDate = new Date(this.getToday.y, this.getToday.m - 1, this.getToday.d)
+      return date.formatDate(danDate, 'ddd')
+    },
+    isHoliday () { return !parseInt(this.getTodaysData.radniDan) },
+    isSunday () { return this.dayOfWeek === 'Ned' },
+    getDayClasses () {
+      let classes = []
+      if (!this.isSunday && !this.isHoliday) classes.push('is-workingday')
+      if (this.isSunday) classes.push('is-sunday')
+      if (this.isHoliday) classes.push('is-holiday')
+      return classes
+    }
   },
   methods: {
     ...mapActions('main',['getKalendar']),
     ...mapMutations('main',['cleartateVars', 'setSuglasnostLS']),
     onResize () {
+
       console.log(this.$refs.topContainer);
       // const length = Math.min(this.$refs.midContainer.clientWidth, this.$refs.midContainer.clientHeight) / 16
+
       const topHeight = this.$refs.topContainer.clientHeight / 16
       const bottomHeight = this.$refs.bottomContainer.clientHeight / 16
       const midHeight = (this.$refs.midContainer.clientHeight / 16) - topHeight - bottomHeight
+      const iconWidth = (this.$refs.dayIcon.$el.clientWidth / 16)
       const cellSize = ((midHeight - 1.5) / 3) * 0.9
       this.midStyle = {
         paddingTop: topHeight + 'rem',
@@ -170,6 +228,7 @@ export default {
         margin: '0.25rem'
       }
       this.iconSize = (cellSize / 3 ) + 'rem'
+      this.iconWidth = iconWidth + 'rem'
     },
     checkSuglasnost() {
       console.log('check suglasnost = ',this.getSuglasnostLS);
@@ -180,51 +239,9 @@ export default {
       }
     },
     tweakHeight(offset) {
-      console.log(offset)
       return {
         height: offset ? `calc(100vh - ${offset}px)` : '100vh'
       }
-    },
-
-    MoonPhase(yr_v, d_v, m_v) {
-      // console.log(yr_v, d_v, m_v);
-      // '    /*
-      // '      calculates the moon phase (0-7), accurate To 1 segment.
-      // '      0 = > new moon.
-      // '      4 => full moon.
-      // '      */
-
-      let b
-      let c
-      let e //As Int
-      let jd //As Double
-      if(m_v < 3){
-          yr_v=yr_v-1
-          m_v = m_v+12
-      }
-      m_v=m_v+1
-      c = 365.25*yr_v
-      e = 30.6*m_v
-      jd = c+e+d_v-694039.09  /* jd Is total days elapsed */
-      jd = jd/29.53           /* divide by the moon cycle (29.53 days) */
-      b=Math.floor(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
-      jd = jd - b		  /* subtract integer part To leave fractional part of original jd */
-      b = jd*8 + 0.5	   /* scale fraction from 0-8 AND Round by adding 0.5 */
-      b =   b & 7		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
-      // return b
-        let moonImg
-        switch (b) {
-          case 0: moonImg = 'statics/moon0-40.png'; break
-          case 1: moonImg = 'statics/moon1-40.png'; break
-          case 2: moonImg = 'statics/moon2-40.png'; break
-          case 3: moonImg = 'statics/moon3-40.png'; break
-          case 4: moonImg = 'statics/moon4-40.png'; break
-          case 5: moonImg = 'statics/moon5-40.png'; break
-          case 6: moonImg = 'statics/moon6-40.png';console.log('moonImg'); break
-          case 7: moonImg = 'statics/moon7-40.png'; break
-          // default: moonImg = '';
-        }
-        return moonImg
     }
   }
 }

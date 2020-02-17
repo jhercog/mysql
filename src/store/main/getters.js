@@ -9,6 +9,9 @@ const nextYear = newDate.getFullYear() + 1
 export function someGetter (state) {
 }
 */
+export function getToday (state) {
+  return state.today
+}
 export function getShowDialog (state) {
   return state.showDialog
 }
@@ -61,31 +64,24 @@ export function getPraznici (state) {
 //   return state.praznici
 // }
 
-export function getTodaysSaint (state) {
-
-  const newDate = new Date()
-  const todayDay = newDate.getDate()
-  const todayMonth = newDate.getMonth() + 1
-
-  if (state.kalendar==null) {
-    return null;
+export function getTodaysData (state) {
+  let data = {
+    sveci: '',
+    blagdan: '',
+    prazblag: '',
+    pomicni_blag: '',
+    radniDan: ''
   }
-
-  let daysInMonth = state.kalendar.filter(item => {
-    return item.m === todayMonth.toString()
-  })
-
-  let day = daysInMonth.find(item => {
-    return item.d === todayDay.toString()
-  })
-
-  return {
-    sveci: day.sveci,
-    blagdan: day.blagdan,
-    prazblag: day.prazblag,
-    pomicni_blag: day.pomicni_blag,
+  if (state.kalendar) {
+    let month = state.kalendar.filter(item => item.m === state.today.m.toString())
+    let day = month.find(item => item.d === state.today.d.toString())
+    data.sveci = day.sveci
+    data.blagdan = day.blagdan
+    data.prazblag = day.prazblag
+    data.pomicni_blag = day.pomicni_blag
+    data.radniDan = day.radniDan
   }
-
+  return data
 }
 
 export function getKalMolVersionLocal (state) {
@@ -153,6 +149,51 @@ export function getGodine ( state ) {
   // console.log('..........', god2);
   // return {godina1:god1,godina2:god2}
 }
+
+export function getMoonClass ( state ) {
+  return ({ day, month, year }) => {
+    let b, c, e, jd
+    if(month < 3){
+        year--
+        month += 12
+    }
+    ++month
+    c = 365.25 * year
+    e = 30.6 * month
+    jd = c + e + day - 694039.09  /* jd Is total days elapsed */
+    jd /= 29.5305882           /* divide by the moon cycle (29.53 days) */
+    b = parseInt(jd)//'    b = jd		   /* Int(jd) -> b, take integer part of jd */
+    jd -= b		  /* subtract integer part To leave fractional part of original jd */
+    b = Math.round(jd * 8)
+    if (b >= 8 ) {
+        b = 0; //0 and 8 are the same so turn 8 into 0
+    }
+    // b =   b & 27		  //'' /* 0 AND 8 are the same so turn 8 into 0 */
+
+    // 0 => New Moon
+    // 1 => Waxing Crescent Moon
+    // 2 => Quarter Moon
+    // 3 => Waxing Gibbous Moon
+    // 4 => Full Moon
+    // 5 => Waning Gibbous Moon
+    // 6 => Last Quarter Moon
+    // 7 => Waning Crescent Moon
+    let moonClass
+    switch (b) {
+      case 0: moonClass = 'wi wi-moon-alt-new'; break
+      case 1: moonClass = 'wi wi-moon-alt-waxing-crescent-3'; break
+      case 2: moonClass = 'wi wi-moon-alt-first-quarter'; break
+      case 3: moonClass = 'wi wi-moon-alt-waxing-gibbous-3'; break
+      case 4: moonClass = 'wi wi-moon-alt-full'; break
+      case 5: moonClass = 'wi wi-moon-alt-waning-gibbous-3'; break
+      case 6: moonClass = 'wi wi-moon-alt-third-quarter'; break
+      case 7: moonClass = 'wi wi-moon-alt-waning-crescent-3'; break
+      default: moonClass = 'wi wi-moon-alt-new';
+    }
+    return moonClass
+  }
+}
+
 // export async function getKalMolVersionRemote (commit,state) {
 // console.log('getKalVersion getter');
 //
